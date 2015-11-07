@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+
+        <title>JavaScript Modularization Seven Day</title>
+
+        <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+        <meta name="author" content="Hakim El Hattab">
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/theme/wx.css" id="theme">
+
+        <!-- Code syntax highlighting -->
+        <link rel="stylesheet" href="lib/css/zenburn.css">
+
+        <!-- Printing and PDF exports -->
+        <script>
+            var link = document.createElement( 'link' );
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+            document.getElementsByTagName( 'head' )[0].appendChild( link );
+        </script>
+
+        <!--[if lt IE 9]>
+        <script src="lib/js/html5shiv.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+
+        <div class="reveal">
+
+            <!-- Any section element inside of this container is displayed as a slide -->
+            <div class="slides">
+
+                <section style="margin-top:2%" data-markdown>
+                    <script type="text/template">
+                        <span style="font-size:100px">RxJava</span>
+
+
+                        
+                                        
+
+                        <small>
+                            <a href="http://mrfu.me/">MrFu</a> /
+                            <a href="https://github.com/mrfufufu">@MrFuFuFu</a>
+                        </small>
+                    </script>
+                </section>
+
+                <!-- <section data-markdown>
+                    <script type="text/template">
+                        <img src="attach/hux.jpg" style="
+                            width: 200px;
+                            border-radius: 50%;
+                        "/>
+                        ## 黄玄
+                        微信电影票前端工程师
+
+                        <small>前阿里巴巴前端工程师</small>
+
+                        <small>
+                            <a href="http://huangxuan.me">Blog</a> /
+                            <a href="http://weibo.com/huxpro">@Huxpro</a> /
+                            <a href="https://github.com/huxpro">GitHub</a> /
+                            <a href="http://www.zhihu.com/people/huxpro">知乎</a>
+                        </small>
+                    </script>
+                </section> -->
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## What is the RxJava?
+
+                        *a library for composing asynchronous and event-based programs using observable sequences for the Java VM*
+                        <!-- .element: class="fragment" -->
+
+                        一个在 Java VM 上使用可观测的序列来组成异步的、基于事件的程序的库
+                        <!-- .element: class="fragment" -->
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## Why use it?
+
+                        ### *简洁,异步*
+                        <!-- .element: class="fragment" -->
+
+                        随着程序逻辑变得越来越复杂，它依然能够保持简洁
+                        <!-- .element: class="fragment" -->
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        <img src="attach/forSample.png"/>
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        最早，我们这么写代码
+
+                        ```java
+                        private void requestFinished(JSONObject json) {
+                            new DealAsync().execute(json);
+                        }
+
+                        private class DealAsync extends AsyncTask<Void, Void, Void> {
+                            @Override
+                            protected List<Object> doInBackground(JSONArray... params) {
+                                //TOO deal Data
+                                dealData(params);
+                                return data;
+                            }
+                            @Override
+                            protected void onPostExecute(List<Object> entities) {
+                                super.onPostExecute(entities);
+                                //TODO deal data to view
+                            }
+                        }
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        现在，可以这么写
+
+                        ```java
+                        private void requestFinished(JSONObject json) {
+                            Observable.just(dealData(json))
+                                    .subscribeOn(Schedulers.newThread())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(new Action1<Object>() {
+                                        @Override
+                                        public void call(Object object) {
+                                            //TODO deal data to view
+                                        }
+                                    });
+                        }
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## 没啥变化？
+
+                        <blockquote class="fragment"><p>*sample again!*</p></blockquote>
+                        <!-- .element: class="fragment" -->
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template" style="font-size: 0.85em">
+                        一组文件夹下所有的 png 图片都加载出来，并显示在 imageCollectorView 内
+
+                        ```java
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                super.run();
+                                for (File folder : folders) {
+                                    File[] files = folder.listFiles();
+                                    for (File file : files) {
+                                        if (file.getName().endsWith(".png")) {
+                                            final Bitmap bitmap = getBitmapFromFile(file);
+                                            getActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    imageCollectorView.addImage(bitmap);
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }.start();
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template" style="font-size: 0.85em">
+                        一组文件夹下所有的 png 图片都加载出来，并显示在 imageCollectorView 内
+
+                        <font size=6>
+                        ```java
+                        Observable.from(folders)
+                        .flatMap(new Func1<File, Observable<File>>() {
+                            @Override
+                            public Observable<File> call(File file) {
+                                return Observable.from(file.listFiles());
+                            }
+                        })
+                        .filter(new Func1<File, Boolean>() {
+                            @Override
+                            public Boolean call(File file) {
+                                return file.getName().endsWith(".png");
+                            }
+                        })
+                        .map(new Func1<File, Bitmap>() {
+                            @Override
+                            public Bitmap call(File file) {
+                                return getBitmapFromFile(file);
+                            }
+                        })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Action1<Bitmap>() {
+                            @Override
+                            public void call(Bitmap bitmap) {
+                                imageCollectorView.addImage(bitmap);
+                            }
+                        });
+                        ```
+                        <font>
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template" style="font-size: 0.85em">
+                        每次你打开，看到的是这样的：
+
+                        <font size=6>
+                        ```java
+                        Observable.from(folders)
+                            .flatMap((Func1) (folder) -> { Observable.from(file.listFiles()) })
+                            .filter((Func1) (file) -> { file.getName().endsWith(".png") })
+                            .map((Func1) (file) -> { getBitmapFromFile(file) })
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe((Action1) (bitmap) -> { imageCollectorView.addImage(bitmap) });
+                        ```
+                        <font>
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        # *入了个门*
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        *核心：Observables（被观察者，事件源）*
+
+                        *Subscribers（观察者）*
+
+                        Observables 发出事件, Subscribers 处理事件
+                        <!-- .element: class="fragment" -->
+
+                        <blockquote class="fragment"><p>eg: 触摸事件，web接口调用返回的数据</p></blockquote>
+                        <!-- .element: class="fragment" -->
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        常见观察者模式
+
+                        <img src="attach/clickEvent.png"/>
+                        <!-- .element: class="fragment" -->
+
+                        RxJava
+                        <!-- .element: class="fragment" -->
+
+                        <img src="attach/observableEvent.png"/>
+                        <!-- .element: class="fragment" -->
+
+                        区别：Observable 没有 Subscriber 的话，则不会发出任何事件
+                        <!-- .element: class="fragment" -->
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ```java
+                        Observable<String> myObservable = Observable.create(
+                            new Observable.OnSubscribe<String>() {
+                                @Override
+                                public void call(Subscriber<？ super String> sub) {
+                                    sub.onNext("Hello, world!");
+                                    sub.onCompleted();
+                                }
+                            }
+                        );
+                        ```
+
+                        ```java
+                        Subscriber<String> mySubscriber = new Subscriber<String>() {
+                            @Override
+                            public void onNext(String s) { System.out.println(s); }
+
+                            @Override
+                            public void onCompleted() { }
+
+                            @Override
+                            public void onError(Throwable e) { }
+                        };
+                        ```
+
+                        ```java
+                        myObservable.subscribe(mySubscriber);
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        # *太复杂？*
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ```java
+                        Observable.just("Hello, world!")
+                                .subscribe(new Action1<String>() {
+                                    @Override
+                                    public void call(String s) {
+                                        System.out.println(s);
+                                    }
+                                });
+                        ```
+
+                        *或*
+                        <!-- .element: class="fragment" -->
+
+                        ```java
+                        Observable.just("Hello, world!")
+                            .subscribe(s -> System.out.println(s));
+                        ```
+                        <!-- .element: class="fragment" -->
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## *需求：*
+                        `Hello, world!`中加签名：
+
+                        <blockquote class="fragment"><p>*Hello, world! -MrFu*</p></blockquote>
+
+                    </script>
+                </section>
+
+
+                <section data-markdown>
+                    <script type="text/template">
+                        - 修改 Observable 对象
+                        ```java
+                        Observable.just("Hello, world! -MrFu")
+                        ```
+                        <!-- .element: class="fragment" -->
+                        - Subscriber 中修改：
+                        <!-- .element: class="fragment" -->
+                        ```java
+                        .subscribe(s -> System.out.println(s + " -MrFu"));
+                        ```
+                        <!-- .element: class="fragment" -->
+
+                        
+
+                        # *NO!!!!*
+                        <!-- .element: class="fragment" -->
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## 操作符
+
+                        ```java
+                        Observable.just("Hello, world!")
+                                .map(new Func1<String, String>() {
+                                    @Override
+                                    public String call(String s) {
+                                        return s + " -Dan";
+                                    }
+                                })
+                                .subscribe(s -> System.out.println(s));
+                        ```
+
+                        ```java
+                        Observable.just("Hello, world!")
+                                .map(s -> s + " -Dan")
+                                .subscribe(s -> System.out.println(s));
+                        ```
+                        
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ```java
+                        Observable.just("Hello, world!")
+                            .map(new Func1<String, Integer>() {
+                                @Override
+                                public Integer call(String s) {
+                                    return s.hashCode();
+                                }
+                            })
+                            .subscribe(i -> System.out.println(Integer.toString(i)));
+                        ```
+
+                        ```Java
+                        Observable.just("Hello, world!")
+                            .map(s -> s.hashCode())
+                            .subscribe(i -> System.out.println(Integer.toString(i)));
+                        ```
+                        <!-- .element: class="fragment" -->
+                        
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        - *Observable* 可以是一个数据库查询，*Subscriber* 用来显示查询结果；
+
+                        - *Observable* 可以是屏幕上的点击事件，*Subscriber* 用来响应点击事件；
+
+                        - *Observable* 可以是一个网络请求，*Subscriber* 用来显示请求结果。
+        
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        *Observable* 和 *Subscriber* 是独立于中间的变换过程的
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        # *来点牛逼的？*
+
+                        此处应该有表情！
+                    </script>
+                </section>
+
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## *造个搜索引擎！*
+
+                        ```java
+                        Observable<List<String>> query(String text);  //返回 urls
+                        ```
+                        <!-- .element: class="fragment" -->
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        按照之前做法，我们会这么做：
+                        ```java
+                        query("Hello, world!")
+                            .subscribe(urls -> {
+                                for (String url : urls) {
+                                    System.out.println(url);
+                                }
+                            });
+                        ```
+
+                        但是，还能这么做：
+                        <!-- .element: class="fragment" -->
+
+                        ```java
+                        query("Hello, world!")
+                            .subscribe(urls -> {
+                                Observable.from(urls)
+                                    .subscribe(url -> System.out.println(url));
+                            });
+                        ```
+                        <!-- .element: class="fragment" -->
+
+                        *不够！！！*
+                        <!-- .element: class="fragment" -->
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        超牛逼的操作符：*flatMap*
+
+                        ```java
+                        query("Hello, world!")
+                            .flatMap(new Func1<List<String>, Observable<String>>() {
+                                @Override
+                                public Observable<String> call(List<String> urls) {
+                                    return Observable.from(urls);
+                                }
+                            })
+                            .subscribe(url -> System.out.println(url));
+
+                        ```
+
+                        ```java
+                        query("Hello, world!")
+                            .flatMap(urls -> Observable.from(urls))
+                            .subscribe(url -> System.out.println(url));
+                        ```
+                        <!-- .element: class="fragment" -->
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        - *Observable.flatMap()* 接收一个 *Observable* 的输出作为输入，同时输出另外一个 *Observable*。
+
+                        - *flatMap* 输出的新的 *Observable* 正是我们在 *Subscriber* 想要接收的。现在 *Subscriber* 不再收到 *List(String)*，而是收到一系列单个的字符串，就像 *Observable.from()* 的输出一样。
+                        <!-- .element: class="fragment" -->
+
+                    </script>
+                </section>
+
+
+                <section data-markdown>
+                    <script type="text/template">
+                        <span style="font-size:100px">*See More!*</span>
+                        
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ```java
+                        query("Hello, world!")
+                            .flatMap(urls -> Observable.from(urls))
+                            .flatMap(url -> getTitle(url))
+                            .subscribe(title -> System.out.println(title));
+                        ```
+
+                        ```java
+                        query("Hello, world!")
+                            .flatMap(urls -> Observable.from(urls))
+                            .flatMap(url -> getTitle(url))
+                            .filter(title -> title != null)//过滤不为 null
+                            .take(5)//只要5个结果
+                            .doOnNext(title -> saveTitle(title))//打印前保存标题
+                            .subscribe(title -> System.out.println(title));
+                        ```
+                        <!-- .element: class="fragment" -->
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        - *Operators* 可以让你对数据流做任何操作
+
+                        - *响应式函数编程*的魅力：一系列的 *Operators* 链接起来就可以完成复杂的逻辑。代码被分解成一系列可以组合的片段
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        <span style="font-size:100px">*Deal Error*</span>
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ```java
+                        Observable.just("Hello, world!")
+                            .map(s -> potentialException(s))
+                            .map(s -> anotherPotentialException(s))
+                            .subscribe(new Subscriber<String>() {
+                                @Override
+                                public void onNext(String s) { System.out.println(s); }
+
+                                @Override
+                                public void onCompleted() { System.out.println("Completed!"); }
+
+                                @Override
+                                public void onError(Throwable e) { System.out.println("Ouch!"); }
+                            });
+                        ```
+
+                        - 错误处理
+                        - 所有的异常交给订阅者处理
+                        - 订阅者知道什么时候已经接收了全部数据
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## 牛逼哄哄的 *Scheduler*
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        * *subscribeOn()*: 指定 *subscribe()* 所发生的线程，即 *Observable.OnSubscribe* 被激活时所处的线程。或者叫做事件产生的线程。
+                        * *observeOn()*: 指定 *Subscriber* 所运行在的线程。或者叫做事件消费的线程。
+
+                        <img src="attach/yunle.jpg" style="width:360px;" />
+                        <!-- .element: class="fragment" -->
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ```java
+                        Observable.just(1, 2, 3, 4)
+                            .subscribeOn(Schedulers.io()) // 指定 subscribe() 发生在 IO 线程
+                            .observeOn(AndroidSchedulers.mainThread()) // 指定 Subscriber 的回调发生在主线程
+                            .subscribe(new Action1<Integer>() {
+                                @Override
+                                public void call(Integer number) {
+                                    Log.d(tag, "number:" + number);
+                                }
+                            });
+                        ```
+                        
+                        常用于：后台线程取数据，主线程显示
+                        <!-- .element: class="fragment" -->
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ##切一次切不够！！
+                        
+
+                        ```java
+                        Observable.just(1, 2, 3, 4) // IO 线程，由 subscribeOn() 指定
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(Schedulers.newThread())
+                            .map(mapOperator) // 新线程，由 observeOn() 指定
+                            .observeOn(Schedulers.io())
+                            .map(mapOperator2) // IO 线程，由 observeOn() 指定
+                            .observeOn(AndroidSchedulers.mainThread)
+                            .subscribe(subscriber);  // Android 主线程，由 observeOn() 指定
+                        ```
+                        <!-- .element: class="fragment" -->
+
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        *Sample*
+
+                        ```java
+                        getUser(userId, new Callback<User>() {
+                            @Override
+                            public void success(User user) {
+                                new Thread() {
+                                    @Override
+                                    public void run() {
+                                        processUser(user); // 尝试修正 User 数据
+                                        runOnUiThread(new Runnable() { // 切回 UI 线程
+                                            @Override
+                                            public void run() {
+                                                userView.setUser(user);
+                                            }
+                                        });
+                                    }).start();
+                            }
+
+                            @Override
+                            public void failure(RetrofitError error) {
+                                // Error handling
+                                ...
+                            }
+                        };
+                        ```
+
+                    </script>
+                </section>
+
+                <section data-markdown data-background="attach/bm_1.jpg"
+                    style="background:rgba(0,0,0,0.8)">
+                    <script type="text/template">
+                        ## *Callback hell  !!!!!*
+
+                        ## Solve it!
+                        <!-- .element: class="fragment" -->
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ```java
+                        getUser(userId)
+                            .doOnNext(new Action1<User>() {
+                                @Override
+                                public void call(User user) {
+                                    processUser(user);
+                                })
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Observer<User>() {
+                                @Override
+                                public void onNext(User user) {
+                                    userView.setUser(user);
+                                }
+                                @Override
+                                public void onCompleted() {
+                                }
+                                @Override
+                                public void onError(Throwable error) {
+                                    // Error handling
+                                    ...
+                                }
+                            });
+                        ```
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        <span style="font-size:100px">*Anything else?*</span>
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## *RxBinding*
+
+                        ```java
+                        Button button = ...;
+                        RxView.clickEvents(button) // 以 Observable 形式来反馈点击事件
+                            .subscribe(new Action1<ViewClickEvent>() {
+                                @Override
+                                public void call(ViewClickEvent event) {
+                                    // Click handling
+                                }
+                            });
+                        ```
+                        <!-- .element: class="fragment" -->
+
+                        ```java
+                        RxView.clickEvents(button)
+                            .throttleFirst(500, TimeUnit.MILLISECONDS)
+                            .subscribe(clickAction);
+                        ```
+                        <!-- .element: class="fragment" -->
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## *RxBus*
+                        <blockquote class="fragment"><p>一种模式，使用 RxJava 实现 EventBus，从而不需要使用 Otto 或者 EventBus。[[1]](http://nerds.weddingpartyapp.com/tech/2014/12/24/implementing-an-event-bus-with-rxjava-rxbus/)</p></blockquote>
+                        <!-- .element: class="fragment" -->
+
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## *各种异步！！*
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        # *Question*
+
+                        Hey, do not be shy.
+
+                    </script>
+                </section>
+
+                <section style="text-align: left;">
+                    <h1>THE END</h1>
+
+                    <h5>MrFu</h5>
+                    <small>
+                        <a href="http://mrfu.me">Blog</a> /
+                        <a href="https://github.com/MrFuFuFu">GitHub</a>
+                    </small>
+                </section>
+            </div>
+        </div>
+
+        <pre style="display:none"><code> force highlight.js work </code></pre>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+
+            // Full list of configuration options available at:
+            // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
+                transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+                // Optional reveal.js plugins
+                dependencies: [
+                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/highlight/highlight.js', condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'plugin/zoom-js/zoom.js', async: true },
+                    { src: 'plugin/notes/notes.js', async: true }
+                ]
+            });
+
+        </script>
+
+        <script type="text/javascript">
+            function codeEditor(){
+                var nodes = document.querySelectorAll("code");
+                for (var i = 0; i < nodes.length; i++) {
+                    nodes[i].setAttribute("contenteditable", '');
+                }
+                console.log('code editable now.');
+            }
+            window.codeEditor = codeEditor;
+
+            document.addEventListener('DOMContentLoaded', function(){
+                setTimeout(function(){
+                    codeEditor();
+                },1000)
+            })
+        </script>
+    </body>
+</html>
