@@ -7,7 +7,7 @@
 
 <small class="img-hint">你也可以通过扫描二维码在手机上观看</small>
 
-[我的 Github 上](https://github.com/MrFuFuFu/rxjava-keynote)
+[去 star 我的 Github](https://github.com/MrFuFuFu/rxjava-keynote)
 
 ### Thanks
 
